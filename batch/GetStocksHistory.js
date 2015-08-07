@@ -22,24 +22,27 @@ Stock.find({},function(err,stockList){
 	//iterate the list and get data from yql
 	for(var i=0;i<stockList.length;i++)
 		GetAndUpdateStocksData(stockList[i]);
-
+	console.log('Press ctrl+c to exit');
 });
 
 
 function GetAndUpdateStocksData(stock){
-	console.log('stock symbol'+stock.symbol);
+	console.log('fetching quotes for stock symbol'+stock.symbol);
+	if(!stock.symbol){
+		return;
+	}
+	var query = new YQL('select * from yahoo.finance.historicaldata where symbol ="'+stock.symbol+'" and startDate = "2014-07-06" and endDate = "2015-07-05"');
 
-	var query = new YQL('select * from yahoo.finance.historicaldata where symbol = "YHOO" and startDate = "2015-07-06" and endDate = "2015-08-06"');
-
-	console.log('calling yql now for 'stock.symbol)
+	console.log('calling yql now for '+stock.symbol)
 	query.exec(function (error, response) {
-		console.log(stock);
 	    // Do something with results (response.query.results)
 	    if(error){
 	    	console.log('got error for '+stock.symbol);
 	    	return;
 	    }
-	    if(response.query.results.quote){
+	    
+	    if(response.query.results && response.query.results.quote){
+	    	console.log("got "+response.query.results.quote.length+" responses for "+stock.symbol);
 	    	UpdateStockQuotes(stock,response.query.results.quote);
 	    }
 	   
@@ -48,6 +51,7 @@ function GetAndUpdateStocksData(stock){
 };
 
 function UpdateStockQuotes(stock,quotes){
+	console.log("Now processing responses for "+stock.symbol);
 	for(var i=0;i<quotes.length;i++){
 	    if(quotes[i])
 	    	Stock.findByIdAndUpdate(stock._id,{$push:{quotes:quotes[i]} },function(err,model){
@@ -56,23 +60,3 @@ function UpdateStockQuotes(stock,quotes){
 	}
 };
 
-var testQuotes= [{
-     "Symbol": "YHOO",
-     "Date": "2015-08-05",
-     "Open": "37.32",
-     "High": "37.709999",
-     "Low": "37.23",
-     "Close": "37.25",
-     "Volume": "6837900",
-     "Adj_Close": "37.25"
-    },
-    {
-     "Symbol": "YHOO",
-     "Date": "2015-08-04",
-     "Open": "36.610001",
-     "High": "37.209999",
-     "Low": "36.599998",
-     "Close": "37.119999",
-     "Volume": "8999000",
-     "Adj_Close": "37.119999"
-    }];

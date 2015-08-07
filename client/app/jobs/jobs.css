@@ -1,0 +1,23 @@
+	.chart rect {
+		fill: steelblue;
+	}
+
+	.chart text {
+		fill: white;
+		font: 10px sans-serif;
+		text-anchor: middle;
+	}
+	.chart {
+		margin-top: 40px;
+	}
+
+	.full button span {
+		background-color: limegreen;
+		border-radius: 32px;
+		color: black;
+	}
+	.partially button span {
+		background-color: orange;
+		border-radius: 32px;
+		color: black;
+	}
