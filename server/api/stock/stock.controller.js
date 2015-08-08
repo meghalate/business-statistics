@@ -8,10 +8,18 @@ var Stock = require('./stock.model');
 exports.show = function(req, res) {
 	var start=req.query.start;
 	var end=req.query.end;
+	var sym=new RegExp("^"+req.params.id);
 
-  Stock.find({symbol:req.params.id, 'quotes.Date' :{$gte:new Date('2015-08-08T04:22:00.159Z')}}, function (err, stock) {
-    if(err) { return;}
-    if(!stock) { return res.status(404).send('Not Found'); }
-    return res.json(stock);
+	console.log('Now searching '+sym);
+  Stock.find({symbol:sym},'symbol', function (err, stocks) {
+
+    if(err) { 
+    	res.status(404).end();
+    }
+    if(!stocks) { 
+    	return res.status(404).send('Not Found'); 
+    }
+    console.log('Got stocks '+stocks);
+    return res.json(stocks);
   });
 };

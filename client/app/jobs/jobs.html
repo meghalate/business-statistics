@@ -3,7 +3,13 @@
 <div class="container">
 	<form class="form-inline">
 		<div class="form-group col-md-3">
-			<input type="text" class="form-control" id="exampleInputEmail3" placeholder="Search here e.g. YHOO" ng-model="query">
+
+		    <input type="text" ng-model="query" typeahead="stock.symbol for stock in getStocks($viewValue)" typeahead-loading="loadingStocks" typeahead-no-results="noResults" class="form-control">
+		    <i ng-show="loadingStocks" class="glyphicon glyphicon-refresh"></i>
+		    <div ng-show="noResults">
+		      <i class="glyphicon glyphicon-remove"></i> No Results Found
+		    </div>
+
 		</div>
 		<div class="form-group col-md-3">
 			<p class="input-group">

@@ -1,48 +1,51 @@
 'use strict';
 
 angular.module('businessStatisticsAppApp')
-  .controller('JobsCtrl', function ($scope,$element, $http,Stock,Quote) {
-    $scope.search=function(){
-      Quote.get({sym:$scope.query,start:$scope.dt1,end:$scope.dt2}).$promise.then(populate);
-    };
+.controller('JobsCtrl', function ($scope,$element, $http,Stock,Quote) {
+  $scope.search=function(){
+    Quote.get({sym:$scope.query,start:$scope.dt1,end:$scope.dt2}).$promise.then(populate);
+  };
+
+  $scope.bar={};
+  var populate =function(data){
+    if($scope.bar.remove)
+      $scope.bar.remove();
+    
+    console.log($scope.stocks);
+    if(data.length > 30)
+      data=data.slice(0,30);
+    var width = 960,
+    height = 300;
+    var chart = d3.select('.chart')
+    .attr("width", width)
+    .attr("height", height);
+
+    var y = d3.scale.linear()
+    .range([height, 50]);
+
+    y.domain([0, d3.max(data, function(d) { return d.High; })]);
+
+    var barWidth = width / data.length;
+
+    $scope.bar = chart.selectAll("g")
+    .data(data)
+    .enter().append("g")
+    .attr("transform", function(d, i) { return "translate(" + i * barWidth + ",0)"; });
+
+    $scope.bar.append("rect")
+    .attr("y", function(d) { return y(d.High); })
+    .attr("height", function(d) { return height - y(d.High); })
+    .attr("width", barWidth - 1);
+
+    $scope.bar.append("text")
+    .attr("x", barWidth / 2)
+    .attr("y", function(d) { return y(d.High) + 3; })
+    .attr("dy", ".75em")
+    .text(function(d) { return d.High; });
+  };
 
 
-    var populate =function(data){
-      console.log($scope.stocks);
-      if(data.length > 30)
-        data=data.slice(0,30);
-      var width = 960,
-          height = 300;
-      var chart = d3.select('.chart')
-        .attr("width", width)
-        .attr("height", height);
-
-      var y = d3.scale.linear()
-      .range([height, 50]);
-
-          y.domain([0, d3.max(data, function(d) { return d.High; })]);
-
-          var barWidth = width / data.length;
-
-          var bar = chart.selectAll("g")
-              .data(data)
-            .enter().append("g")
-              .attr("transform", function(d, i) { return "translate(" + i * barWidth + ",0)"; });
-
-          bar.append("rect")
-              .attr("y", function(d) { return y(d.High); })
-              .attr("height", function(d) { return height - y(d.High); })
-              .attr("width", barWidth - 1);
-
-          bar.append("text")
-              .attr("x", barWidth / 2)
-              .attr("y", function(d) { return y(d.High) + 3; })
-              .attr("dy", ".75em")
-              .text(function(d) { return d.High; });
-    };
-
-
-$scope.today = function() {
+  $scope.today = function() {
     $scope.dt1 = new Date();
     $scope.dt2 = new Date();
   };
@@ -81,16 +84,16 @@ $scope.today = function() {
   var afterTomorrow = new Date();
   afterTomorrow.setDate(tomorrow.getDate() + 2);
   $scope.events =
-    [
-      {
-        date: tomorrow,
-        status: 'full'
-      },
-      {
-        date: afterTomorrow,
-        status: 'partially'
-      }
-    ];
+  [
+  {
+    date: tomorrow,
+    status: 'full'
+  },
+  {
+    date: afterTomorrow,
+    status: 'partially'
+  }
+  ];
 
   $scope.getDayClass = function(date, mode) {
     if (mode === 'day') {
@@ -107,6 +110,12 @@ $scope.today = function() {
 
     return '';
   };
-    
 
-  });
+  $scope.getStocks = function(val) {
+    return Stock.get({sym:val}).$promise.then(function(data){
+      return data;
+    });
+  };
+
+
+});

@@ -42,7 +42,7 @@ process.on('SIGINT', function() {
 var Stock = require('../server/api/stock/stock.model');
 var Quote= require('../server/api/quote/quote.model');
 
-Stock.find({symbol: /^A/},function(err,stockList){
+Stock.find({symbol: /^[Z]/},function(err,stockList){
 	if(err){
 		console.error('error while makeing query'+err);
 		process.exit(-1);
@@ -96,10 +96,16 @@ function UpdateStockQuotes(stock,quotes){
 
 function addQuotes(quotes){
 	for(var i=0;i<quotes.length;i++){
-		console.log('Now creating '+quotes[i]);
-		Quote.create(quotes[i],function(err){
-			console.console.log('Erro while creating record '+err);
-		});
+		//console.log('Now creating '+quotes[i]);
+		if(quotes[i]){
+			Quote.create(quotes[i],function(err,data){
+				if(err)
+				console.log('Erro while creating record '+err);
+				else
+					console.log('done'+i);
+			});
+		}
+
 	}
 	console.log('Press ctrl+c to exit');
 }
