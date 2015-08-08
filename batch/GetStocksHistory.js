@@ -7,22 +7,55 @@ var YQL=require('yql');
 var mongoose = require('mongoose');
 
 var config = require('../server/config/environment');
-
+var dbURI=config.mongo.uri;
 // Connect to database
-mongoose.connect(config.mongo.uri, config.mongo.options);
+console.log("About to connect to "+config.mongo.uri);
+
+mongoose.connect(config.mongo.uri);
+
 mongoose.connection.on('error', function(err) {
 	console.error('MongoDB connection error: ' + err);
 	process.exit(-1);
 	}
 );
 
-var Stock = require('../server/api/stock/stock.model');
+// CONNECTION EVENTS
+// When successfully connected
+mongoose.connection.on('connected', function () {  
+  console.log('Mongoose default connection open to ' + dbURI);
+}); 
 
-Stock.find({},function(err,stockList){
+
+// When the connection is disconnected
+mongoose.connection.on('disconnected', function () {  
+  console.log('Mongoose default connection disconnected'); 
+});
+
+// If the Node process ends, close the Mongoose connection 
+process.on('SIGINT', function() {  
+  mongoose.connection.close(function () { 
+    console.log('Mongoose default connection disconnected through app termination'); 
+    process.exit(0); 
+  }); 
+}); 
+
+var Stock = require('../server/api/stock/stock.model');
+var Quote= require('../server/api/quote/quote.model');
+
+Stock.find({symbol: /^A/},function(err,stockList){
+	if(err){
+		console.error('error while makeing query'+err);
+		process.exit(-1);
+	}
 	//iterate the list and get data from yql
-	for(var i=0;i<stockList.length;i++)
-		GetAndUpdateStocksData(stockList[i]);
-	console.log('Press ctrl+c to exit');
+	console.log('found '+stockList.length +' records ');
+	//addQuotes(stockList.quotes);
+	for(var i=0;i<stockList.length;i++){
+		console.log(i);
+		addQuotes(stockList[i].quotes);
+		//GetAndUpdateStocksData(stockList[i]);
+	}
+	
 });
 
 
@@ -58,5 +91,15 @@ function UpdateStockQuotes(stock,quotes){
 	    		// to do
 	    	});
 	}
+	console.log('Press ctrl+c to exit');
 };
 
+function addQuotes(quotes){
+	for(var i=0;i<quotes.length;i++){
+		console.log('Now creating '+quotes[i]);
+		Quote.create(quotes[i],function(err){
+			console.console.log('Erro while creating record '+err);
+		});
+	}
+	console.log('Press ctrl+c to exit');
+}

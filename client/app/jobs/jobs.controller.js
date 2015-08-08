@@ -1,11 +1,16 @@
 'use strict';
 
 angular.module('businessStatisticsAppApp')
-  .controller('JobsCtrl', function ($scope,$element, $http,Stock) {
-    Stock.get({sym:'YHOO'}).$promise.then(function(data){
-      $scope.stocks = data;
+  .controller('JobsCtrl', function ($scope,$element, $http,Stock,Quote) {
+    $scope.search=function(){
+      Quote.get({sym:$scope.query,start:$scope.dt1,end:$scope.dt2}).$promise.then(populate);
+    };
+
+
+    var populate =function(data){
       console.log($scope.stocks);
-      data=data.quotes.slice(0,30);
+      if(data.length > 30)
+        data=data.slice(0,30);
       var width = 960,
           height = 300;
       var chart = d3.select('.chart')
@@ -34,16 +39,19 @@ angular.module('businessStatisticsAppApp')
               .attr("y", function(d) { return y(d.High) + 3; })
               .attr("dy", ".75em")
               .text(function(d) { return d.High; });
-    });
+    };
 
 
 $scope.today = function() {
-    $scope.dt = new Date();
+    $scope.dt1 = new Date();
+    $scope.dt2 = new Date();
   };
   $scope.today();
 
   $scope.clear = function () {
-    $scope.dt = null;
+    $scope.dt1 = null;
+    $scope.dt2 = null;
+
   };
 
   // Disable weekend selection
